@@ -1,0 +1,43 @@
+# .dockerignore
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Test files and coverage
+test_*.py
+*_test.py
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation (optional - keep if you want docs in container)
+*.md
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
