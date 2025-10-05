@@ -120,10 +120,6 @@ graph TB
 
     USER -->|Poll Status| STATUS
 
-    style INTERRUPT fill:#ff6b6b
-    style CLASSIFIER fill:#ffd93d
-    style REACT fill:#6bcf7f
-    style USER fill:#4dabf7
 ```
 
 ### Agent Workflow: ReAct Pattern
@@ -194,13 +190,6 @@ flowchart TD
     WAIT -->|Edit SQL| MODIFY[Update Query]
     MODIFY --> EXECUTE
 
-    style START fill:#e3f2fd
-    style CLASSIFY fill:#fff3e0
-    style AUTO fill:#c8e6c9
-    style PAUSE fill:#ffccbc
-    style WAIT fill:#f8bbd0
-    style RETURN_SUCCESS fill:#c8e6c9
-    style RETURN_REJECT fill:#ffcdd2
 ```
 
 ## 🚀 Quick Start
