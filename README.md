@@ -1,4 +1,4 @@
-# 🛡️ SQL-Guardian: Enterprise-Grade Natural Language to SQL Agent
+# 🛡️ SQL-Guardian: Natural Language to SQL Agent
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
@@ -6,56 +6,50 @@
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**Table of Contents**
+
+1.  [Overview](#overview)
+2.  [Key Features](#key-features)
+3.  [Architecture](#architecture)
+4.  [Development](#development)
+5.  [Quick Start](#quick-start)
+6.  [Usage](#usage)
+7.  [API Reference](#api-reference)
+8.  [Database Schema](#database-schema)
+9.  [Safety Features](#safety-features)
+10. [Sample Queries](#sample-queries)
+11. [Troubleshooting](#troubleshooting)
+
 ## 🎯 Overview
 
-**SQL-Guardian** is an intelligent agentic system that safely translates natural language queries into SQL operations across multiple databases with **enterprise-grade human-in-the-loop safety controls**. The system automatically executes safe **read operations** (SELECT queries) while gating all **database mutations** (INSERT, UPDATE, DELETE, DROP, ALTER) behind mandatory human approval checkpoints.
+**SQL-Guardian** is an agentic system that translates natural language queries into SQL operations across multiple databases with human-in-the-loop safety controls. The system automatically executes read operations (SELECT queries) and gates all database mutations (INSERT, UPDATE, DELETE) behind a human approval checkpoint.
 
 ### ✨ Key Features
 
-| Feature                           | Description                                                     |
-| --------------------------------- | --------------------------------------------------------------- |
-| 🤖 **AI-Powered Translation**     | Uses Google Gemini 2.0 Flash to convert natural language to SQL |
-| 🔒 **Safety-First Architecture**  | Automatic execution for reads, mandatory approval for writes    |
-| 🔄 **ReAct Agent Pattern**        | Implements iterative reasoning and action loops                 |
-| 📊 **Multi-Database Support**     | Simultaneous access to HR and Sales databases                   |
-| ⚡ **FastAPI REST Interface**     | Production-ready API with OpenAPI documentation                 |
-| 🎭 **Human-in-the-Loop Patterns** | Supports approve, reject, and edit workflows                    |
-| 🐳 **Docker-Ready**               | Fully containerized with Docker Compose support                 |
-| 📈 **State Persistence**          | LangGraph checkpointing for resumable workflows                 |
-
-### 🎬 Quick Demo
-
-```bash
-# Safe query - executes immediately
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Show me all employees in Engineering"}'
-
-# Dangerous query - requires approval
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Delete all employees from Marketing"}'
-# Returns: {"status": "approval_required", "thread_id": "...", ...}
-
-# Approve the mutation
-curl -X POST "http://localhost:8000/mutations/approve" \
-  -H "Content-Type: application/json" \
-  -d '{"thread_id": "...", "decision": "approve"}'
-```
+| Feature | Description |
+| --- | --- |
+| **AI-Powered Translation** | Uses Google Gemini to convert natural language to SQL. |
+| **Safety-First Architecture** | Automatic execution for reads, mandatory approval for writes. |
+| **ReAct Agent Pattern** | Implements iterative reasoning and action loops. |
+| **Multi-Database Support** | Accesses HR and Sales databases. |
+| **FastAPI REST Interface** | Provides a REST API with OpenAPI documentation. |
+| **Human-in-the-Loop** | Supports approve, reject, and edit workflows. |
+| **Containerized** | Includes Docker Compose support. |
+| **State Persistence** | Uses LangGraph checkpointing for resumable workflows. |
 
 ## 🏗️ Architecture
 
 ### Technology Stack
 
-| Component            | Technology                   | Purpose                                               |
-| -------------------- | ---------------------------- | ----------------------------------------------------- |
-| **AI Engine**        | Google Gemini 2.0 Flash Lite | Natural language understanding & SQL generation       |
-| **Agent Framework**  | LangGraph + LangChain        | State machine orchestration & ReAct pattern           |
-| **API Server**       | FastAPI + Uvicorn            | REST endpoints with automatic OpenAPI docs            |
-| **Database**         | SQLite 3                     | Dual databases (HR & Sales) with full ACID compliance |
-| **State Management** | LangGraph MemorySaver        | Persistent checkpointing for interrupt/resume         |
-| **Containerization** | Docker + Docker Compose      | Production deployment with health checks              |
-| **Environment**      | Python 3.11                  | Modern Python with type hints                         |
+| Component | Technology | Purpose |
+| --- | --- | --- |
+| **AI Engine** | Google Gemini | Natural language understanding & SQL generation. |
+| **Agent Framework** | LangGraph + LangChain | State machine orchestration & ReAct pattern. |
+| **API Server** | FastAPI + Uvicorn | REST endpoints with OpenAPI documentation. |
+| **Database** | SQLite 3 | Dual databases (HR & Sales). |
+| **State Management** | LangGraph MemorySaver | Persistent checkpointing for workflows. |
+| **Containerization** | Docker + Docker Compose | Deployment with health checks. |
+| **Environment** | Python 3.11 | Core runtime. |
 
 ### System Architecture
 
@@ -192,24 +186,43 @@ flowchart TD
 
 ```
 
+## Development
+
+### Project Structure
+
+```
+sql-guardian/
+├── app/
+│   ├── main.py              # FastAPI application
+│   ├── agent.py             # LangGraph agent logic
+│   └── toolkits.py          # Database toolkits
+├── data/
+│   ├── hr.db
+│   └── sales.db
+├── setup_databases.py       # Database initialization script
+├── requirements.txt         # Python dependencies
+├── Dockerfile              # Container configuration
+└── .env                    # Environment variables
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-| Requirement    | Version | Purpose                     |
-| -------------- | ------- | --------------------------- |
-| Python         | 3.11+   | Core runtime                |
-| Docker         | 20.10+  | (Optional) Containerization |
-| Google API Key | -       | Gemini LLM access           |
+| Requirement | Version | Purpose |
+| --- | --- | --- |
+| Python | 3.11+ | Core runtime |
+| Docker | 20.10+ | (Optional) Containerization |
+| Google API Key | - | Gemini LLM access |
 
-### Option 1: Docker Compose (Recommended) ⭐
+### Option 1: Docker Compose (Recommended)
 
-The fastest way to get SQL-Guardian running:
+This is the fastest way to get SQL-Guardian running.
 
 ```bash
 # 1. Clone the repository
 git clone <repository-url>
-cd SQl-Guardian
+cd sql-guardian
 
 # 2. Create .env file with your Google API key
 cat > .env << EOF
@@ -225,91 +238,43 @@ curl http://localhost:8000/health
 
 **Access Points:**
 
-- 📚 API Docs: http://localhost:8000/docs
-- 🏥 Health Check: http://localhost:8000/health
-- 🔄 Alternative Docs: http://localhost:8000/redoc
+*   **API Docs:** `http://localhost:8000/docs`
+*   **Health Check:** `http://localhost:8000/health`
 
-### Option 2: Docker Manual Build
-
-```bash
-# Build the image
-docker build -t sql-guardian .
-
-# Run the container
-docker run -p 8000:8000 \
-  -e GOOGLE_API_KEY='your-api-key' \
-  --name sql-guardian \
-  sql-guardian
-
-# View logs
-docker logs -f sql-guardian
-
-# Stop the container
-docker stop sql-guardian
-```
-
-### Option 3: Local Development (Python Virtual Environment)
+### Option 2: Local Development (Conda)
 
 ```bash
-# 1. Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Create .env file
-echo "GOOGLE_API_KEY=your-google-api-key-here" > .env
-
-# 4. Setup databases (auto-creates data/hr.db and data/sales.db)
-python setup_databases.py
-
-# 5. Start the server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Development Features:**
-
-- 🔥 Hot reload on code changes
-- 📊 Detailed error traces
-- 🔍 Debug mode enabled
-
-### Option 4: Local Development (Conda)
-
-```bash
-# 1. Create Conda environment
+# 1. Create and activate Conda environment
 conda create -n sql-guardian python=3.11 -y
 conda activate sql-guardian
 
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Setup environment and databases
-echo "GOOGLE_API_KEY=your-api-key" > .env
+# 3. Create .env file with your Google API key
+echo "GOOGLE_API_KEY=your-google-api-key-here" > .env
+
+# 4. Setup databases
 python setup_databases.py
 
-# 4. Start server
-uvicorn app.main:app --reload
+# 5. Start the server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-
 
 ## 📡 API Reference
 
 ### Endpoint Overview
 
-| Method | Endpoint                     | Auth | Purpose                       | Status Codes       |
-| ------ | ---------------------------- | ---- | ----------------------------- | ------------------ |
-| `GET`  | `/`                          | -    | Root endpoint with API info   | 200                |
-| `GET`  | `/health`                    | -    | Health check                  | 200                |
-| `POST` | `/query`                     | -    | Submit natural language query | 200, 500           |
-| `POST` | `/mutations/approve`         | -    | Approve/reject/edit mutations | 200, 400, 404, 500 |
-| `GET`  | `/threads/{thread_id}/state` | -    | Get thread state              | 200                |
-| `GET`  | `/docs`                      | -    | Interactive API documentation | 200                |
-| `GET`  | `/redoc`                     | -    | Alternative API docs          | 200                |
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Health check. |
+| `POST` | `/query` | Submit a natural language query. |
+| `POST` | `/mutations/approve` | Approve, reject, or edit a mutation. |
+| `GET` | `/threads/{thread_id}/state` | Get the state of a query thread. |
 
-### 1. POST /query - Initiate Query
+### POST /query - Initiate Query
 
-Submit a natural language query to be translated into SQL.
+Submits a natural language query for translation to SQL.
 
 **Request Body:**
 
@@ -323,12 +288,10 @@ Submit a natural language query to be translated into SQL.
 
 ```json
 {
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
+  "thread_id": "some-uuid",
   "status": "completed",
-  "result": "Found 3 employees in Engineering: Alice Johnson (alice.johnson@company.com), Bob Smith (bob.smith@company.com), Grace Lee (grace.lee@company.com)",
-  "summary": "Query completed.",
-  "agent_outcome": null,
-  "messages": [...]
+  "result": "Found 3 employees in Engineering: Alice, Bob, Carol",
+  "summary": "Query completed."
 }
 ```
 
@@ -336,51 +299,30 @@ Submit a natural language query to be translated into SQL.
 
 ```json
 {
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
+  "thread_id": "some-uuid",
   "status": "approval_required",
   "interrupt_data": [
     {
       "action_required": "review_and_approve",
       "operation_type": "INSERT",
-      "tool_name": "hr_sql_db_query",
-      "sql_query": "INSERT INTO employees (name, email, dept_id, hire_date) VALUES ('John Doe', 'john.doe@company.com', 1, '2025-10-01')",
-      "warning": "This operation will modify the database. Please review carefully.",
-      "options": {
-        "approve": "Execute the query as shown",
-        "reject": "Cancel this operation",
-        "edit": "Modify the query before execution"
-      }
+      "sql_query": "INSERT INTO employees (name) VALUES ('John Doe')",
+      "warning": "This operation will modify the database."
     }
   ],
-  "agent_outcome": {
-    "type": "action",
-    "tool": "hr_sql_db_query",
-    "tool_input": "INSERT INTO employees...",
-    "log": "Proposing to insert new employee"
-  },
   "message": "Approval is required for this database mutation."
 }
 ```
 
-### 2. POST /mutations/approve - Approve/Reject/Edit
+### POST /mutations/approve - Approve/Reject/Edit
 
-Handle human-in-the-loop decision for write operations.
+Handles the human decision for a pending write operation.
 
 **Request Body (Approve):**
 
 ```json
 {
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
+  "thread_id": "some-uuid",
   "decision": "approve"
-}
-```
-
-**Request Body (Reject):**
-
-```json
-{
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
-  "decision": "reject"
 }
 ```
 
@@ -388,9 +330,9 @@ Handle human-in-the-loop decision for write operations.
 
 ```json
 {
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
+  "thread_id": "some-uuid",
   "decision": "edit",
-  "modified_sql": "INSERT INTO employees (name, email, dept_id, hire_date) VALUES ('Jane Doe', 'jane.doe@company.com', 1, CURRENT_DATE)"
+  "modified_sql": "INSERT INTO employees (name) VALUES ('Jane Doe')"
 }
 ```
 
@@ -398,57 +340,25 @@ Handle human-in-the-loop decision for write operations.
 
 ```json
 {
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
+  "thread_id": "some-uuid",
   "status": "approved_and_executed",
-  "result": "Employee successfully inserted into HR database.",
+  "result": "Employee successfully inserted.",
   "summary": "Operation completed."
 }
 ```
 
-**Response (Rejected):**
+### GET /threads/{thread_id}/state - Check Status
 
-```json
-{
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "rejected",
-  "message": "Database mutation was rejected. Workflow terminated."
-}
-```
-
-**Response (Edited):**
-
-```json
-{
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "edited_and_executed",
-  "result": "Employee successfully inserted with modified SQL.",
-  "summary": "Operation completed with human-edited SQL.",
-  "modified_sql": "INSERT INTO employees..."
-}
-```
-
-### 3. GET /threads/{thread_id}/state - Check Status
-
-Poll the current state of a query thread.
+Polls the current state of a query thread.
 
 **Response:**
 
 ```json
 {
-  "thread_id": "550e8400-e29b-41d4-a716-446655440000",
+  "thread_id": "some-uuid",
   "status": "pending",
-  "state": {
-    "messages": [...],
-    "agent_outcome": {...},
-    "last_tool_result": null,
-    "next": ["human_approval"],
-    "metadata": {...}
-  },
-  "pending_action": {
-    "type": "action",
-    "tool": "hr_sql_db_query",
-    "tool_input": "INSERT INTO..."
-  }
+  "state": { ... },
+  "pending_action": { ... }
 }
 ```
 
@@ -457,17 +367,10 @@ Poll the current state of a query thread.
 #### 1. Safe SELECT Query (Automatic Execution)
 
 ```bash
-# Query employee information (automatically executed)
+# Query employee information
 curl -X POST "http://localhost:8000/query" \
   -H "Content-Type: application/json" \
-  -d '{"text": "Show me all employees in the Engineering department"}'
-
-# Expected Response:
-# {
-#   "thread_id": "uuid-here",
-#   "status": "completed",
-#   "result": "Employee data from HR database..."
-# }
+  -d '{"text": "Show me all employees in Engineering"}'
 ```
 
 #### 2. Write Query (Human-in-the-Loop Workflow)
@@ -475,443 +378,137 @@ curl -X POST "http://localhost:8000/query" \
 **Step 1: Initiate a write operation**
 
 ```bash
-# Attempt to insert a new employee (requires approval)
+# Attempt to insert a new employee
 curl -X POST "http://localhost:8000/query" \
   -H "Content-Type: application/json" \
-  -d '{"text": "Insert a new employee named John Doe in the Engineering department"}'
-
-# Expected Response:
-# {
-#   "thread_id": "abc123-def456-ghi789",
-#   "status": "approval_required",
-#   "agent_outcome": {
-#     "tool": "sql_db_query",
-#     "tool_input": "INSERT INTO employees (name, email, dept_id) VALUES...",
-#     "log": "Proposed SQL mutation"
-#   },
-#   "message": "Approval is now required for this database mutation."
-# }
+  -d '{"text": "Add a new employee named John Doe"}'
+# The response will contain a thread_id
 ```
 
-**Step 2: Check the pending status**
+**Step 2: Approve the mutation**
 
 ```bash
-# Check what's pending approval
-curl -X GET "http://localhost:8000/threads/abc123-def456-ghi789/state"
-
-# Expected Response:
-# {
-#   "thread_id": "abc123-def456-ghi789",
-#   "status": "pending",
-#   "pending_action": {...},
-#   "state": {...}
-# }
-```
-
-**Step 3: Approve the mutation**
-
-```bash
-# Approve the database mutation
+# Approve the database mutation using the thread_id
 curl -X POST "http://localhost:8000/mutations/approve" \
   -H "Content-Type: application/json" \
   -d '{
     "thread_id": "abc123-def456-ghi789",
     "decision": "approve"
   }'
-
-# Expected Response:
-# {
-#   "thread_id": "abc123-def456-ghi789",
-#   "status": "approved_and_executed",
-#   "result": "Employee successfully inserted into HR database."
-# }
 ```
 
-**Step 3 (Alternative): Reject the mutation**
+## Usage
 
-```bash
-# Reject the database mutation
-curl -X POST "http://localhost:8000/mutations/approve" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "thread_id": "abc123-def456-ghi789",
-    "decision": "reject"
-  }'
+### Query Workflow
 
-# Expected Response:
-# {
-#   "thread_id": "abc123-def456-ghi789",
-#   "status": "rejected",
-#   "message": "Database mutation was rejected. Workflow terminated."
-# }
-```
+SQL-Guardian converts natural language to SQL. It distinguishes between safe read operations and write operations.
 
-## Database Schema
+*   **Read Operations (Automatic):** `SELECT` queries execute immediately.
+*   **Write Operations (Approval Required):** `INSERT`, `UPDATE`, and `DELETE` queries require human approval.
+
+### Supported Natural Language Patterns
+
+The system understands various patterns for database operations:
+
+*   **Query:** "Show me all ...", "List ...", "Find ..."
+*   **Insert:** "Add a new ...", "Insert data ..."
+*   **Update:** "Update ...", "Change ...", "Modify ..."
+*   **Delete:** "Delete ...", "Remove ..."
+
+### Safety Features in Practice
+
+1.  A query is submitted to the `/query` endpoint.
+2.  The system analyzes the generated SQL.
+3.  If the SQL is a write operation, the status `approval_required` is returned with a `thread_id`.
+4.  A human can review the pending SQL via the `/threads/{thread_id}/state` endpoint.
+5.  The operation is approved or rejected via the `/mutations/approve` endpoint.
+6.  If approved, the operation executes.
+
+### Monitoring and Logging
+
+*   **Check thread status:** `curl "http://localhost:8000/threads/{thread_id}/state"`
+*   **Health check:** `curl "http://localhost:8000/health"`
+
+## 💾 Database Schema
 
 ### HR Database (`data/hr.db`)
 
 ```sql
--- Departments table
 CREATE TABLE departments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(100) NOT NULL UNIQUE
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
 );
 
--- Employees table
 CREATE TABLE employees (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    hire_date DATE NOT NULL,
-    dept_id INTEGER NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    dept_id INTEGER,
     FOREIGN KEY (dept_id) REFERENCES departments (id)
-);
-
--- Salaries table
-CREATE TABLE salaries (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    amount DECIMAL(10, 2) NOT NULL,
-    effective_date DATE NOT NULL,
-    emp_id INTEGER NOT NULL,
-    FOREIGN KEY (emp_id) REFERENCES employees (id)
 );
 ```
 
 ### Sales Database (`data/sales.db`)
 
 ```sql
--- Customers table
 CREATE TABLE customers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE
+    email VARCHAR(100) NOT NULL
 );
 
--- Products table
 CREATE TABLE products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     price DECIMAL(10, 2) NOT NULL
 );
 
--- Orders table
 CREATE TABLE orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    created_at DATETIME NOT NULL,
-    customer_id INTEGER NOT NULL,
+    id INTEGER PRIMARY KEY,
+    customer_id INTEGER,
     FOREIGN KEY (customer_id) REFERENCES customers (id)
-);
-
--- Order items table
-CREATE TABLE order_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    quantity INTEGER NOT NULL,
-    unit_price DECIMAL(10, 2) NOT NULL,
-    order_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders (id),
-    FOREIGN KEY (product_id) REFERENCES products (id)
 );
 ```
 
-## Safety Features
+## 🛡️ Safety Features
 
 ### Automatic Query Classification
 
-- **✅ Safe Operations**: SELECT queries execute automatically
-- **⚠️ Dangerous Operations**: INSERT, UPDATE, DELETE require human approval
-- **🔍 Pattern Recognition**: Case-insensitive SQL keyword detection
-- **🛡️ Default Safe**: Unknown patterns default to safe execution
+*   **Safe Operations**: `SELECT` queries are executed automatically.
+*   **Dangerous Operations**: `INSERT`, `UPDATE`, `DELETE` require human approval.
+*   **Default Safe**: Unknown patterns default to requiring approval.
 
 ### Human-in-the-Loop Controls
 
-- **⏸️ Persistent Interrupts**: Graph state preserved during approval
-- **🔄 Resumable Workflows**: Continue from exact interruption point
-- **📊 State Inspection**: Full visibility into pending operations
-- **❌ Safe Termination**: Clean rejection without side effects
+*   **Persistent Interrupts**: The graph state is preserved during the approval process.
+*   **Resumable Workflows**: Workflows continue from the point of interruption.
+*   **State Inspection**: Pending operations are visible.
 
-### Enterprise Security
+### Security
 
-- **🔐 Thread Isolation**: UUID-based session management
-- **📝 Audit Trail**: Complete operation logging
-- **🚫 Fail-Safe Design**: Errors default to safe states
-- **🔍 Transparent Operations**: Full SQL query visibility before execution
+*   **Thread Isolation**: UUID-based session management.
+*   **Audit Trail**: Operations are logged.
+*   **Transparent Operations**: SQL queries are visible before execution.
 
-## Sample Queries to Test
+## 📝 Sample Queries
 
 ### Safe Queries (Auto-Execute)
 
-```
-"Show me all employees in the Engineering department"
-"What are the top 5 highest paid employees?"
-"List all customers who made orders in the last 30 days"
-"Show me the total revenue by product category"
-```
+*   "Show me all employees in the Engineering department"
+*   "What are the top 5 highest paid employees?"
+*   "List all customers who made orders in the last 30 days"
 
 ### Dangerous Queries (Require Approval)
 
-```
-"Delete all employees from the Engineering department"
-"Update all product prices to increase by 10%"
-"Insert a new employee named Alice Smith"
-"Remove all orders older than 6 months"
-```
-
-## Usage
-
-### Basic Query Workflow
-
-SQL-Guardian supports natural language queries that are automatically converted to SQL and executed against your databases. The system distinguishes between safe read operations and potentially dangerous write operations.
-
-#### Read Operations (Automatic Execution)
-
-Read operations using SELECT queries execute immediately without requiring approval:
-
-```bash
-# Example read queries
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Show me all employees"}'
-
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "What are the total sales by customer?"}'
-```
-
-#### Write Operations (Human-in-the-Loop)
-
-Write operations (INSERT, UPDATE, DELETE) require human approval:
-
-```bash
-# Step 1: Submit write query
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Insert a new employee named John Smith"}'
-
-# Response includes thread_id for approval process
-# {"thread_id": "abc-123", "status": "approval_required", ...}
-
-# Step 2: Approve or reject the operation
-curl -X POST "http://localhost:8000/mutations/approve" \
-  -H "Content-Type: application/json" \
-  -d '{"thread_id": "abc-123", "decision": "approve"}'
-```
-
-### Supported Natural Language Patterns
-
-SQL-Guardian understands various natural language patterns for database operations:
-
-#### Query Patterns
-
-- "Show me all [table]"
-- "List [columns] from [table]"
-- "Find [conditions]"
-- "What are the [aggregations]?"
-- "Get [data] where [conditions]"
-
-#### Insert Patterns
-
-- "Add a new [record] with [values]"
-- "Insert [data] into [table]"
-- "Create a [record] named [name]"
-
-#### Update Patterns
-
-- "Update [table] set [column] to [value]"
-- "Change [field] for [conditions]"
-- "Modify [record] where [conditions]"
-
-#### Delete Patterns
-
-- "Delete [records] where [conditions]"
-- "Remove [data] from [table]"
-- "Drop [table/records]"
-
-### Safety Features in Practice
-
-#### Automatic Classification
-
-- **SELECT queries**: Execute immediately
-- **INSERT/UPDATE/DELETE**: Pause for approval
-- **DDL operations**: Require approval (CREATE, DROP, ALTER)
-- **Administrative commands**: Require approval (GRANT, REVOKE)
-
-#### Approval Workflow
-
-1. Submit query via `/query` endpoint
-2. System analyzes SQL intent
-3. If dangerous: Returns `approval_required` status with thread_id
-4. Human reviews proposed SQL via `/threads/{thread_id}/state`
-5. Human approves/rejects via `/mutations/approve`
-6. If approved: Operation executes and returns results
-
-### Monitoring and Logging
-
-Check query status and review pending operations:
-
-```bash
-# Check thread status
-curl "http://localhost:8000/threads/{thread_id}/state"
-
-# Health check
-curl "http://localhost:8000/health"
-```
-
-## Examples and Use Cases
-
-### Example 1: Employee Information Query (Read - Auto-Execute)
-
-**Query**: "Show me all employees in the Engineering department"
-
-**Expected Workflow**:
-
-1. User submits natural language query
-2. Agent analyzes and identifies as SELECT operation
-3. Query executes automatically
-4. Results returned immediately
-
-**Sample Response**:
-
-```json
-{
-  "thread_id": "abc-123-def",
-  "status": "completed",
-  "result": "Found 3 employees in Engineering: Alice Johnson, Bob Smith, Grace Lee"
-}
-```
-
-### Example 2: Adding New Employee (Write - Requires Approval)
-
-**Query**: "Insert a new employee named John Doe in the Engineering department with email john.doe@company.com"
-
-**Expected Workflow**:
-
-1. User submits natural language query
-2. Agent analyzes and identifies as INSERT operation
-3. System pauses and requests human approval
-4. Human reviews and approves/rejects
-5. If approved, operation executes
-
-**Sample Approval Request**:
-
-```json
-{
-  "thread_id": "xyz-789-abc",
-  "status": "approval_required",
-  "agent_outcome": {
-    "tool": "hr_sql_db_query",
-    "tool_input": "INSERT INTO employees (name, email, dept_id, hire_date) VALUES ('John Doe', 'john.doe@company.com', 1, '2025-09-30')",
-    "log": "Proposing to insert new employee into HR database"
-  },
-  "message": "Approval is required for this database mutation."
-}
-```
-
-### Example 3: Sales Data Analysis (Read - Auto-Execute)
-
-**Query**: "What are the top 3 best-selling products by total revenue?"
-
-**Expected Workflow**:
-
-1. Agent identifies complex analytical query as safe SELECT
-2. Generates appropriate JOIN query across sales tables
-3. Executes automatically and returns results
-
-**Sample Response**:
-
-```json
-{
-  "thread_id": "def-456-ghi",
-  "status": "completed",
-  "result": "Top products by revenue: 1. Data Analytics Platform ($74,999.85), 2. Machine Learning Platform ($23,999.94), 3. Enterprise Software License ($20,999.93)"
-}
-```
-
-### Example 4: Dangerous Operation (Write - Requires Approval)
-
-**Query**: "Delete all orders older than 1 year"
-
-**Expected Workflow**:
-
-1. Agent identifies as potentially destructive DELETE operation
-2. System immediately pauses for approval
-3. Shows exact SQL that would be executed
-4. Waits for human decision
-
-**Sample Approval Request**:
-
-```json
-{
-  "thread_id": "ghi-012-jkl",
-  "status": "approval_required",
-  "agent_outcome": {
-    "tool": "sales_sql_db_query",
-    "tool_input": "DELETE FROM orders WHERE created_at < date('now', '-1 year')",
-    "log": "Proposing to delete historical orders from sales database"
-  },
-  "message": "⚠️ CAUTION: This operation will permanently delete data. Review carefully before approving."
-}
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **API Key Error**
-
-   ```
-   Error: Google API key not found
-   Solution: Ensure GOOGLE_API_KEY is set in .env file
-   ```
-
-2. **Database Not Found**
-
-   ```
-   Error: No such table: employees
-   Solution: Run python setup_databases.py
-   ```
-
-3. **Port Already in Use**
-
-   ```
-   Error: Port 8000 is already in use
-   Solution: Use --port 8001 or kill existing process
-   ```
-
-4. **Import Errors**
-   ```
-   Error: No module named 'langchain_google_genai'
-   Solution: pip install -r requirements.txt
-   ```
-
-## Development
-
-### Project Structure
-
-```
-sql-guardian/
-├── app/
-│   ├── __init__.py          # Package initialization
-│   ├── main.py              # FastAPI application
-│   ├── agent.py             # LangGraph agent logic
-│   └── toolkits.py          # Database toolkits
-├── data/
-│   ├── hr.db                # HR database (auto-generated)
-│   └── sales.db             # Sales database (auto-generated)
-├── setup_databases.py       # Database initialization script
-├── requirements.txt         # Python dependencies
-├── Dockerfile              # Container configuration
-├── .env                    # Environment variables
-├── .gitignore              # Git exclusions
-└── README.md               # This file
-```
-
-### Technology Stack
-
-- **Backend**: Python 3.11, FastAPI, Uvicorn
-- **AI/ML**: LangChain, LangGraph, Google Gemini
-- **Database**: SQLite, SQLAlchemy
-- **Deployment**: Docker, Environment-based configuration
-- **Development**: Conda, pip, Git
-
-_Built for data safety and developer productivity._
+*   "Delete all employees from the Engineering department"
+*   "Update all product prices to increase by 10%"
+*   "Insert a new employee named Alice Smith"
+
+## 🆘 Troubleshooting
+
+| Issue | Solution |
+| --- | --- |
+| **API Key Error** | Ensure `GOOGLE_API_KEY` is set in the `.env` file. |
+| **Database Not Found** | Run `python setup_databases.py`. |
+| **Port Already in Use** | Stop the process using port 8000 or use a different port. |
+| **Import Errors** | Run `pip install -r requirements.txt`. |
