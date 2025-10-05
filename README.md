@@ -6,20 +6,6 @@
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Table of Contents**
-
-1.  [Overview](#overview)
-2.  [Key Features](#key-features)
-3.  [Architecture](#architecture)
-4.  [Development](#development)
-5.  [Quick Start](#quick-start)
-6.  [Usage](#usage)
-7.  [API Reference](#api-reference)
-8.  [Database Schema](#database-schema)
-9.  [Safety Features](#safety-features)
-10. [Sample Queries](#sample-queries)
-11. [Troubleshooting](#troubleshooting)
-
 ## 🎯 Overview
 
 **SQL-Guardian** is an agentic system that translates natural language queries into SQL operations across multiple databases with human-in-the-loop safety controls. The system automatically executes read operations (SELECT queries) and gates all database mutations (INSERT, UPDATE, DELETE) behind a human approval checkpoint.
