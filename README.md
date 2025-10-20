@@ -6,36 +6,49 @@
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🎯 Overview
+## Table of Contents
 
-**SQL-Guardian** is an agentic system that translates natural language queries into SQL operations across multiple databases with human-in-the-loop safety controls. The system automatically executes read operations (SELECT queries) and gates all database mutations (INSERT, UPDATE, DELETE) behind a human approval checkpoint.
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Development](#development)
+- [Quick Start](#-quick-start)
+- [API Reference](#-api-reference)
+- [Usage](#usage)
+- [Database Schema](#-database-schema)
+- [Safety Features](#%EF%B8%8F-safety-features)
+- [Examples](#-examples)
+- [Troubleshooting](#-troubleshooting)
+
+
+---
+
+## Overview
+
+An agentic system that translates natural language queries into SQL operations with human-in-the-loop safety controls. Automatically executes read operations (SELECT) and gates all database mutations (INSERT/UPDATE/DELETE) behind approval checkpoints.
 
 ### ✨ Key Features
 
-| Feature | Description |
-| --- | --- |
-| **AI-Powered Translation** | Uses Google Gemini to convert natural language to SQL. |
-| **Safety-First Architecture** | Automatic execution for reads, mandatory approval for writes. |
-| **ReAct Agent Pattern** | Implements iterative reasoning and action loops. |
-| **Multi-Database Support** | Accesses HR and Sales databases. |
-| **FastAPI REST Interface** | Provides a REST API with OpenAPI documentation. |
-| **Human-in-the-Loop** | Supports approve, reject, and edit workflows. |
-| **Containerized** | Includes Docker Compose support. |
-| **State Persistence** | Uses LangGraph checkpointing for resumable workflows. |
+- **AI-Powered Translation**: Google Gemini converts natural language to SQL
+- **Safety-First Architecture**: Auto-executes reads, requires approval for writes
+- **ReAct Agent Pattern**: Iterative reasoning with action loops
+- **Multi-Database**: HR and Sales databases with isolated toolkits
+- **FastAPI REST Interface**: Auto-generated OpenAPI documentation
+- **Human-in-the-Loop**: Approve, reject, or edit workflows
+- **State Persistence**: LangGraph checkpointing for resumable workflows
+- **Containerized**: Docker & Docker Compose ready
 
 ## 🏗️ Architecture
 
 ### Technology Stack
 
-| Component | Technology | Purpose |
-| --- | --- | --- |
-| **AI Engine** | Google Gemini | Natural language understanding & SQL generation. |
-| **Agent Framework** | LangGraph + LangChain | State machine orchestration & ReAct pattern. |
-| **API Server** | FastAPI + Uvicorn | REST endpoints with OpenAPI documentation. |
-| **Database** | SQLite 3 | Dual databases (HR & Sales). |
-| **State Management** | LangGraph MemorySaver | Persistent checkpointing for workflows. |
-| **Containerization** | Docker + Docker Compose | Deployment with health checks. |
-| **Environment** | Python 3.11 | Core runtime. |
+| Layer        | Technology            | Purpose                                 |
+| ------------ | --------------------- | --------------------------------------- |
+| **AI**       | Google Gemini         | Natural language to SQL conversion      |
+| **Agent**    | LangGraph + LangChain | State orchestration & ReAct pattern     |
+| **API**      | FastAPI + Uvicorn     | REST endpoints with auto-generated docs |
+| **Database** | SQLite 3              | Dual databases (HR & Sales)             |
+| **State**    | LangGraph MemorySaver | Persistent checkpointing                |
+| **Runtime**  | Python 3.11+          | Core environment                        |
 
 ### System Architecture
 
@@ -102,44 +115,15 @@ graph TB
 
 ```
 
-### Agent Workflow: ReAct Pattern
+### Agent Workflow
 
-```mermaid
-stateDiagram-v2
-    [*] --> AgentNode: User Query
+The agent uses three primary nodes:
 
-    AgentNode --> RouteDecision: Generate Action
+- **Agent Node**: LLM-driven decision making for tool selection
+- **Tools Node**: Executes SQL toolkits and appends results to state
+- **Human Approval Node**: Interrupts for write/maintenance SQL requiring approval
 
-    RouteDecision --> ToolsNode: AgentAction (Safe SQL)
-    RouteDecision --> HumanApprovalNode: AgentAction (Dangerous SQL)
-    RouteDecision --> [*]: AgentFinish
-
-    HumanApprovalNode --> ApprovalDecision: Interrupt & Wait
-
-    ApprovalDecision --> ToolsNode: Approve ✅
-    ApprovalDecision --> [*]: Reject ❌
-    ApprovalDecision --> ToolsNode: Edit & Execute 📝
-
-    ToolsNode --> AgentNode: Execute Tool<br/>Add to State
-
-    note right of HumanApprovalNode
-        Detects: INSERT, UPDATE, DELETE
-        DROP, ALTER, CREATE, TRUNCATE
-        GRANT, REVOKE, MERGE, etc.
-    end note
-
-    note right of ToolsNode
-        8 SQL Tools Total:
-        - hr_sql_db_query
-        - hr_sql_db_schema
-        - hr_sql_db_list_tables
-        - hr_sql_db_query_checker
-        - sales_sql_db_query
-        - sales_sql_db_schema
-        - sales_sql_db_list_tables
-        - sales_sql_db_query_checker
-    end note
-```
+State is persisted with LangGraph's `MemorySaver`, enabling interrupt/resume workflows.
 
 ### Safety Decision Flow
 
@@ -179,113 +163,99 @@ flowchart TD
 ```
 sql-guardian/
 ├── app/
-│   ├── main.py              # FastAPI application
-│   ├── agent.py             # LangGraph agent logic
-│   └── toolkits.py          # Database toolkits
-├── data/
+│   ├── main.py              # FastAPI application & endpoints
+│   ├── agent.py             # LangGraph agent with ReAct pattern
+│   └── toolkits.py          # HR & Sales database toolkits
+├── data/                    # SQLite databases (created by setup)
 │   ├── hr.db
 │   └── sales.db
-├── setup_databases.py       # Database initialization script
+├── setup_databases.py       # Initialize databases with seed data
 ├── requirements.txt         # Python dependencies
-├── Dockerfile              # Container configuration
-└── .env                    # Environment variables
+├── docker-compose.yml       # Multi-container setup
+├── Dockerfile              # Container image
+└── .env                    # Environment variables (not committed)
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-| Requirement | Version | Purpose |
-| --- | --- | --- |
-| Python | 3.11+ | Core runtime |
-| Docker | 20.10+ | (Optional) Containerization |
-| Google API Key | - | Gemini LLM access |
+- **Python**: 3.11+
+- **Google API Key**: For Gemini LLM (set as `GOOGLE_API_KEY` in `.env`)
+- **Docker** (optional): For containerized deployment
 
 ### Option 1: Docker Compose (Recommended)
 
-This is the fastest way to get SQL-Guardian running.
-
 ```bash
-# 1. Clone the repository
+# Clone and setup
 git clone <repository-url>
 cd sql-guardian
+echo "GOOGLE_API_KEY=your-key-here" > .env
 
-# 2. Create .env file with your Google API key
-cat > .env << EOF
-GOOGLE_API_KEY=your-google-api-key-here
-EOF
-
-# 3. Start with Docker Compose
+# Start
 docker-compose up --build -d
 
-# 4. Verify it's running
+# Verify
 curl http://localhost:8000/health
 ```
 
-**Access Points:**
+Access: `http://localhost:8000/docs`
 
-*   **API Docs:** `http://localhost:8000/docs`
-*   **Health Check:** `http://localhost:8000/health`
-
-### Option 2: Local Development (Conda)
+### Option 2: Local Development
 
 ```bash
-# 1. Create and activate Conda environment
-conda create -n sql-guardian python=3.11 -y
-conda activate sql-guardian
-
-# 2. Install dependencies
+# Setup environment
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Create .env file with your Google API key
-echo "GOOGLE_API_KEY=your-google-api-key-here" > .env
+# Configure
+echo "GOOGLE_API_KEY=your-key-here" > .env
 
-# 4. Setup databases
+# Initialize and run
 python setup_databases.py
-
-# 5. Start the server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+Access: `http://localhost:8000/docs`
+
 ## 📡 API Reference
 
-### Endpoint Overview
+### Endpoints
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `GET` | `/health` | Health check. |
-| `POST` | `/query` | Submit a natural language query. |
-| `POST` | `/mutations/approve` | Approve, reject, or edit a mutation. |
-| `GET` | `/threads/{thread_id}/state` | Get the state of a query thread. |
+| Method | Endpoint                     | Description                   |
+| ------ | ---------------------------- | ----------------------------- |
+| `GET`  | `/health`                    | Health check                  |
+| `POST` | `/query`                     | Submit natural language query |
+| `POST` | `/mutations/approve`         | Approve/reject/edit mutation  |
+| `GET`  | `/threads/{thread_id}/state` | Get query thread state        |
 
-### POST /query - Initiate Query
+### POST /query
 
-Submits a natural language query for translation to SQL.
+Submit a natural language query.
 
-**Request Body:**
+**Request:**
 
 ```json
-{
-  "text": "Show me all employees in the Engineering department"
-}
+{ "text": "Show me all employees in the Engineering department" }
 ```
 
-**Response (Auto-Executed - SELECT):**
+**Response (SELECT - Auto-Executed):**
 
 ```json
 {
-  "thread_id": "some-uuid",
+  "thread_id": "uuid-here",
   "status": "completed",
-  "result": "Found 3 employees in Engineering: Alice, Bob, Carol",
+  "result": "Found 3 employees...",
   "summary": "Query completed."
 }
 ```
 
-**Response (Requires Approval - INSERT/UPDATE/DELETE):**
+**Response (Write - Requires Approval):**
 
 ```json
 {
-  "thread_id": "some-uuid",
+  "thread_id": "uuid-here",
   "status": "approval_required",
   "interrupt_data": [
     {
@@ -294,130 +264,70 @@ Submits a natural language query for translation to SQL.
       "sql_query": "INSERT INTO employees (name) VALUES ('John Doe')",
       "warning": "This operation will modify the database."
     }
-  ],
-  "message": "Approval is required for this database mutation."
+  ]
 }
 ```
 
-### POST /mutations/approve - Approve/Reject/Edit
+### POST /mutations/approve
 
-Handles the human decision for a pending write operation.
+Handle approval decisions.
 
-**Request Body (Approve):**
+**Approve:**
 
 ```json
 {
-  "thread_id": "some-uuid",
+  "thread_id": "uuid-here",
   "decision": "approve"
 }
 ```
 
-**Request Body (Edit):**
+**Edit:**
 
 ```json
 {
-  "thread_id": "some-uuid",
+  "thread_id": "uuid-here",
   "decision": "edit",
   "modified_sql": "INSERT INTO employees (name) VALUES ('Jane Doe')"
 }
 ```
 
-**Response (Approved):**
+**Reject:**
 
 ```json
 {
-  "thread_id": "some-uuid",
-  "status": "approved_and_executed",
-  "result": "Employee successfully inserted.",
-  "summary": "Operation completed."
+  "thread_id": "uuid-here",
+  "decision": "reject"
 }
 ```
 
-### GET /threads/{thread_id}/state - Check Status
+### GET /threads/{thread_id}/state
 
-Polls the current state of a query thread.
-
-**Response:**
-
-```json
-{
-  "thread_id": "some-uuid",
-  "status": "pending",
-  "state": { ... },
-  "pending_action": { ... }
-}
-```
-
-### End-to-End Workflow Examples
-
-#### 1. Safe SELECT Query (Automatic Execution)
-
-```bash
-# Query employee information
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Show me all employees in Engineering"}'
-```
-
-#### 2. Write Query (Human-in-the-Loop Workflow)
-
-**Step 1: Initiate a write operation**
-
-```bash
-# Attempt to insert a new employee
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Add a new employee named John Doe"}'
-# The response will contain a thread_id
-```
-
-**Step 2: Approve the mutation**
-
-```bash
-# Approve the database mutation using the thread_id
-curl -X POST "http://localhost:8000/mutations/approve" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "thread_id": "abc123-def456-ghi789",
-    "decision": "approve"
-  }'
-```
+Inspect pending operations and workflow state.
 
 ## Usage
 
 ### Query Workflow
 
-SQL-Guardian converts natural language to SQL. It distinguishes between safe read operations and write operations.
+1. Submit natural language query to `/query`
+2. Agent generates SQL and classifies operation type
+3. **SELECT queries**: Auto-execute and return results
+4. **Write queries**: Return `approval_required` status with `thread_id`
+5. Use `/mutations/approve` to approve/reject/edit
+6. Execution resumes from interruption point
 
-*   **Read Operations (Automatic):** `SELECT` queries execute immediately.
-*   **Write Operations (Approval Required):** `INSERT`, `UPDATE`, and `DELETE` queries require human approval.
+### Query Types
 
-### Supported Natural Language Patterns
-
-The system understands various patterns for database operations:
-
-*   **Query:** "Show me all ...", "List ...", "Find ..."
-*   **Insert:** "Add a new ...", "Insert data ..."
-*   **Update:** "Update ...", "Change ...", "Modify ..."
-*   **Delete:** "Delete ...", "Remove ..."
-
-### Safety Features in Practice
-
-1.  A query is submitted to the `/query` endpoint.
-2.  The system analyzes the generated SQL.
-3.  If the SQL is a write operation, the status `approval_required` is returned with a `thread_id`.
-4.  A human can review the pending SQL via the `/threads/{thread_id}/state` endpoint.
-5.  The operation is approved or rejected via the `/mutations/approve` endpoint.
-6.  If approved, the operation executes.
-
-### Monitoring and Logging
-
-*   **Check thread status:** `curl "http://localhost:8000/threads/{thread_id}/state"`
-*   **Health check:** `curl "http://localhost:8000/health"`
+| Type   | Execution            | Examples                                |
+| ------ | -------------------- | --------------------------------------- |
+| SELECT | Automatic ✅         | "Show employees", "List sales"          |
+| INSERT | Approval Required ⏸️ | "Add employee", "Create order"          |
+| UPDATE | Approval Required ⏸️ | "Update salary", "Change product price" |
+| DELETE | Approval Required ⏸️ | "Remove employee", "Delete order"       |
+| DDL    | Approval Required ⏸️ | DROP, ALTER, CREATE, TRUNCATE, etc.     |
 
 ## 💾 Database Schema
 
-### HR Database (`data/hr.db`)
+### HR Database
 
 ```sql
 CREATE TABLE departments (
@@ -432,9 +342,16 @@ CREATE TABLE employees (
     dept_id INTEGER,
     FOREIGN KEY (dept_id) REFERENCES departments (id)
 );
+
+CREATE TABLE salaries (
+    id INTEGER PRIMARY KEY,
+    employee_id INTEGER,
+    amount DECIMAL(10, 2),
+    FOREIGN KEY (employee_id) REFERENCES employees (id)
+);
 ```
 
-### Sales Database (`data/sales.db`)
+### Sales Database
 
 ```sql
 CREATE TABLE customers (
@@ -454,47 +371,80 @@ CREATE TABLE orders (
     customer_id INTEGER,
     FOREIGN KEY (customer_id) REFERENCES customers (id)
 );
+
+CREATE TABLE order_items (
+    id INTEGER PRIMARY KEY,
+    order_id INTEGER,
+    product_id INTEGER,
+    quantity INTEGER,
+    FOREIGN KEY (order_id) REFERENCES orders (id),
+    FOREIGN KEY (product_id) REFERENCES products (id)
+);
 ```
 
 ## 🛡️ Safety Features
 
-### Automatic Query Classification
+### Query Classification
 
-*   **Safe Operations**: `SELECT` queries are executed automatically.
-*   **Dangerous Operations**: `INSERT`, `UPDATE`, `DELETE` require human approval.
-*   **Default Safe**: Unknown patterns default to requiring approval.
+- **Safe Operations**: SELECT queries execute automatically
+- **Dangerous Operations**: INSERT/UPDATE/DELETE/DDL require approval
+- **Regex Detection**: Pattern matching in `app/agent.py` identifies operation types
 
-### Human-in-the-Loop Controls
+### Human-in-the-Loop
 
-*   **Persistent Interrupts**: The graph state is preserved during the approval process.
-*   **Resumable Workflows**: Workflows continue from the point of interruption.
-*   **State Inspection**: Pending operations are visible.
+- **Persistent Interrupts**: Graph state preserved during approval process
+- **Resumable Workflows**: Continue from interruption point after decision
+- **State Inspection**: Review pending operations via `/threads/{thread_id}/state`
+- **Thread Isolation**: UUID-based session management
 
-### Security
+### Implementation Details
 
-*   **Thread Isolation**: UUID-based session management.
-*   **Audit Trail**: Operations are logged.
-*   **Transparent Operations**: SQL queries are visible before execution.
+- **Safe/Unsafe SQL Detection**: Uses regex patterns (`WRITE_OPERATION_PATTERN`, `MAINTENANCE_PATTERN`)
+- **State Persistence**: LangGraph `MemorySaver` checkpoint system
+- **Multi-Database Isolation**: Separate toolkits for HR and Sales data
 
-## 📝 Sample Queries
+## 📝 Examples
 
-### Safe Queries (Auto-Execute)
+### Safe Query (Auto-Execute)
 
-*   "Show me all employees in the Engineering department"
-*   "What are the top 5 highest paid employees?"
-*   "List all customers who made orders in the last 30 days"
+```bash
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Show all employees in Engineering"}'
+```
 
-### Dangerous Queries (Require Approval)
+### Write Query (Human-in-Loop)
 
-*   "Delete all employees from the Engineering department"
-*   "Update all product prices to increase by 10%"
-*   "Insert a new employee named Alice Smith"
+**Step 1: Submit query**
+
+```bash
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Add employee John Doe"}'
+# Returns: {"status": "approval_required", "thread_id": "..."}
+```
+
+**Step 2: Approve**
+
+```bash
+curl -X POST "http://localhost:8000/mutations/approve" \
+  -H "Content-Type: application/json" \
+  -d '{"thread_id": "...", "decision": "approve"}'
+```
+
+### Check Status
+
+```bash
+curl "http://localhost:8000/threads/{thread_id}/state"
+curl "http://localhost:8000/health"
+```
 
 ## 🆘 Troubleshooting
 
-| Issue | Solution |
-| --- | --- |
-| **API Key Error** | Ensure `GOOGLE_API_KEY` is set in the `.env` file. |
-| **Database Not Found** | Run `python setup_databases.py`. |
-| **Port Already in Use** | Stop the process using port 8000 or use a different port. |
-| **Import Errors** | Run `pip install -r requirements.txt`. |
+| Issue               | Solution                              |
+| ------------------- | ------------------------------------- |
+| API Key Error       | Ensure `GOOGLE_API_KEY` set in `.env` |
+| Database Not Found  | Run `python setup_databases.py`       |
+| Port Already in Use | Use different port or stop process    |
+| Import Errors       | Run `pip install -r requirements.txt` |
+| LLM Calls Fail      | Verify Google API key validity        |
